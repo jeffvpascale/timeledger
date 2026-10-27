@@ -224,3 +224,7 @@ The API currently has no authentication. The project is intended for local devel
 ## Scope
 
 This project focuses on manual, project-based time tracking. Timers, invoice generation, retainer calculations, and multi-user authentication are outside its current scope.
+
+## License
+
+TimeLedger is licensed under the [MIT License](LICENSE).
