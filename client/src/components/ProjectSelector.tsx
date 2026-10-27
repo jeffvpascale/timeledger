@@ -1,6 +1,7 @@
 import React, { useState, type SubmitEvent } from "react";
 import type { Client } from "../types/Client";
 import type { Project } from "../types/Project";
+import { defaultHourlyRate } from "../services/serviceConfig";
 
 // Component Props
 interface ProjectSelectorProps {
@@ -51,7 +52,7 @@ export default function ProjectSelector({
   // Project Form State
   const [projectName, setProjectName] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [projectRate, setProjectRate] = useState("100");
+  const [projectRate, setProjectRate] = useState(String(defaultHourlyRate));
   const [isArchived, setIsArchived] = useState(false);
   const visibleProjects = projectList.filter(
     (project) => showArchived || !project.isArchived,
@@ -77,7 +78,7 @@ export default function ProjectSelector({
   function ResetProject() {
     setProjectName("");
     setProjectDescription("");
-    setProjectRate("100");
+    setProjectRate(String(defaultHourlyRate));
     setIsArchived(false);
   }
 

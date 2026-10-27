@@ -1,8 +1,11 @@
 import { useState, type ChangeEvent, type SubmitEvent } from "react";
 import type { Project } from "../types/Project";
 import type { BillingStatus, TimeEntry } from "../types/TimeEntry";
+import type { ViewPreferences } from "../services/viewPreferences";
 
 interface TimeEntryProps {
+  preferences: ViewPreferences;
+  onPreferencesChange: (changes: Partial<ViewPreferences>) => void;
   timeEntryList: TimeEntry[];
   selectedProject: Project | null;
   onTimeEntryAdd: (
@@ -43,6 +46,8 @@ function getCurrentDate(): string {
 }
 
 export default function TimeEntry({
+  preferences,
+  onPreferencesChange,
   timeEntryList,
   selectedProject,
   onTimeEntryAdd,
@@ -67,10 +72,7 @@ export default function TimeEntry({
   const [status, setStatus] = useState<Status>(() =>
     hasTimeEntries() ? "viewing" : "adding",
   );
-  const [sortMode, setSortMode] = useState<SortMode>("newest");
-  const [showBilled, setShowBilled] = useState(true);
-  const [showUnbilled, setShowUnbilled] = useState(true);
-  const [showNonBillable, setShowNonBillable] = useState(true);
+  const { sortMode, showBilled, showUnbilled, showNonBillable } = preferences;
 
   // Loading and Error State
   const [isLoading, setIsLoading] = useState(false);
@@ -514,7 +516,7 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showBilledCheckbox"
                   checked={showBilled}
-                  onChange={(e) => setShowBilled(e.target.checked)}
+                  onChange={(e) => onPreferencesChange({ showBilled: e.target.checked })}
                 />
                 <label
                   className="form-check-label"
@@ -530,7 +532,7 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showuUnbilledCheckbox"
                   checked={showUnbilled}
-                  onChange={(e) => setShowUnbilled(e.target.checked)}
+                  onChange={(e) => onPreferencesChange({ showUnbilled: e.target.checked })}
                 />
                 <label
                   className="form-check-label"
@@ -546,7 +548,7 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showuNonBillableCheckbox"
                   checked={showNonBillable}
-                  onChange={(e) => setShowNonBillable(e.target.checked)}
+                  onChange={(e) => onPreferencesChange({ showNonBillable: e.target.checked })}
                 />
                 <label
                   className="form-check-label"
@@ -564,7 +566,7 @@ export default function TimeEntry({
               id="timeEntrySort"
               className="form-select"
               value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              onChange={(e) => onPreferencesChange({ sortMode: e.target.value as SortMode })}
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>

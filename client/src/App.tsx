@@ -20,6 +20,7 @@ import {
   updateBillingStatus,
 } from "./services/TimeEntryService";
 import ThemeToggle from "./components/ThemeToggle";
+import { loadViewPreferences, saveViewPreferences, type ViewPreferences } from "./services/viewPreferences";
 
 function App() {
   // Development Testing Variables
@@ -32,7 +33,24 @@ function App() {
   const [isLoadingClientList, setIsLoadingClientList] = useState(true);
   const [clientLoadError, setClientLoadError] = useState("");
   const [clientLoadAttempt, setClientLoadAttempt] = useState(0);
-  const [showArchived, setShowArchived] = useState(false);
+  // Read once at startup; keep the original selections for restoration.
+  const [savedPreferences] = useState(loadViewPreferences);
+  const [preferences, setPreferences] = useState(savedPreferences);
+  const showArchived = preferences.showArchivedClients;
+  const showArchivedProjects = preferences.showArchivedProjects;
+
+  function updatePreferences(changes: Partial<ViewPreferences>) {
+    setPreferences((previous) => ({ ...previous, ...changes }));
+  }
+
+  const [projectList, setProjectList] = useState<Project[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
+    null,
+  );
+  const [isProjectSelectorHidden, setIsProjectSelectorHidden] = useState(true);
+
+  const [timeEntryList, setTimeEntryList] = useState<TimeEntry[]>([]);
+  const [areTimeEntriesHidden, setAreTimeEntriesHidden] = useState(true);
 
   function clearClientSelection() {
     setSelectedClientId(null);
@@ -44,7 +62,7 @@ function App() {
   }
 
   function handleShowArchivedChange(checked: boolean) {
-    setShowArchived(checked);
+    updatePreferences({ showArchivedClients: checked });
     const selectedClient = clientList.find(
       (client) => client.id === selectedClientId,
     );
@@ -59,13 +77,34 @@ function App() {
     async function loadClients() {
       try {
         const clients = await getClients(controller.signal);
-        if (!controller.signal.aborted) setClientList(clients);
+        if (controller.signal.aborted) return;
+        setClientList(clients);
+
+        const client = clients.find((item) => item.id === savedPreferences.clientId &&
+          (savedPreferences.showArchivedClients || !item.isArchived));
+        if (!client) return;
+
+        const projects = await getProjectsByClientId(client.id);
+        if (controller.signal.aborted) return;
+        setSelectedClientId(client.id);
+        setProjectList(projects);
+        setIsProjectSelectorHidden(false);
+
+        const project = projects.find((item) => item.id === savedPreferences.projectId &&
+          (savedPreferences.showArchivedProjects || !item.isArchived));
+        if (!project) return;
+
+        const entries = await getTimeEntriesByProjectId(project.id);
+        if (controller.signal.aborted) return;
+        setSelectedProjectId(project.id);
+        setTimeEntryList(entries);
+        setAreTimeEntriesHidden(false);
       } catch (error) {
         if (!controller.signal.aborted) {
           setClientLoadError(
             error instanceof Error && error.name === "TimeoutError"
               ? "Loading clients took too long. Please try again."
-              : "Unable to load clients. Check that the API is running and try again.",
+              : "Unable to load saved view or clients. Check that the API is running and try again.",
           );
         }
       } finally {
@@ -74,7 +113,7 @@ function App() {
     }
     void loadClients();
     return () => controller.abort();
-  }, [clientLoadAttempt]);
+  }, [clientLoadAttempt, savedPreferences]);
 
   function retryClientLoad() {
     setClientLoadError("");
@@ -133,12 +172,12 @@ function App() {
   // ========================================
   // Project State
   // ========================================
-  const [projectList, setProjectList] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(
-    null,
-  );
-  const [isProjectSelectorHidden, setIsProjectSelectorHidden] = useState(true);
-  const [showArchivedProjects, setShowArchivedProjects] = useState(false);
+
+  useEffect(() => {
+    if (!isLoadingClientList && !clientLoadError) {
+      saveViewPreferences({ ...preferences, clientId: selectedClientId, projectId: selectedProjectId });
+    }
+  }, [preferences, selectedClientId, selectedProjectId, isLoadingClientList, clientLoadError]);
 
   function clearProjectSelection() {
     setSelectedProjectId(null);
@@ -147,7 +186,7 @@ function App() {
   }
 
   function handleShowArchivedProjectsChange(checked: boolean) {
-    setShowArchivedProjects(checked);
+    updatePreferences({ showArchivedProjects: checked });
     const selectedProject = projectList.find(
       (project) => project.id === selectedProjectId,
     );
@@ -233,8 +272,6 @@ function App() {
   // Time Entry State
   // ========================================
 
-  const [timeEntryList, setTimeEntryList] = useState<TimeEntry[]>([]);
-  const [areTimeEntriesHidden, setAreTimeEntriesHidden] = useState(true);
 
   async function handleTimeEntryAdd(
     date: string,
@@ -396,6 +433,8 @@ function App() {
           <>
             <TimeEntryComponent
               key={selectedProjectId}
+              preferences={preferences}
+              onPreferencesChange={updatePreferences}
               timeEntryList={timeEntryList}
               selectedProject={
                 projectList.find(

@@ -1,8 +1,8 @@
-# J++ Timesheet
+# TimeLedger
 
-A project-based timesheet app built with React and TypeScript, with an ASP.NET Core API and SQLite for persistent storage. Organize work by client and project, record hours, and track billed, unbilled, and non-billable time.
+A lightweight, project-based timesheet application built with React, TypeScript, and ASP.NET Core, using SQLite for persistent storage. Manage clients and projects, track billed, unbilled, and non-billable hours, and monitor project earnings.
 
-Try the frontend with built-in sample data, or run the full stack locally. The application uses the name **TimeLedger** in the browser and backend project.
+Explore the frontend using built-in sample data, or run the complete application locally with the ASP.NET Core API and database.
 
 ## Features
 
@@ -13,6 +13,7 @@ Try the frontend with built-in sample data, or run the full stack locally. The a
 - Filter entries by billing status and sort by date or hours.
 - View project totals, billed and unbilled amounts, and effective hourly rate.
 - Switch between light and dark themes.
+- Remember the last selected client and project, archived visibility, billing filters, and sort order in browser local storage.
 - Run in mock mode without a backend or database.
 
 ## Quick start: mock demo
@@ -39,6 +40,8 @@ npm run dev
 Open the local URL printed by Vite, normally `http://localhost:5173`. Select **Acme Solutions**, then **Website Redesign**, to explore the sample entries and billing summary.
 
 Mock data is held in memory. Changes reset when you reload the page. Mock requests include a simulated 500 ms delay.
+
+View preferences survive reloads in the same browser and are shared across projects. Mock and API modes keep separate view preferences. Saved selections are restored only when the records still exist and are visible under the archived filters. If browser storage is unavailable or contains invalid values, the app uses its defaults. Clearing the site's browser storage resets these preferences; client, project, and time-entry data are not stored there.
 
 ## Screenshots
 
@@ -134,6 +137,7 @@ For a simple file backup, stop the API before copying the database and any accom
 | --- | --- |
 | `VITE_USE_MOCKS` | Only the exact string `true` enables sample data. `false` or an omitted value uses the API. |
 | `VITE_API_BASE_URL` | API base URL, including `/api`. Used when mocks are disabled. |
+| `VITE_DEFAULT_HOURLY_RATE` | Initial hourly rate for new projects, in both API and mock modes. Defaults to `100` when omitted, blank, invalid, or negative; `0` is allowed. Existing project rates are unchanged. |
 
 Restart the Vite dev server after changing `.env`. Production builds embed these values, so rebuild to change them. Keep secrets out of `VITE_` variables because their values are exposed to the browser.
 
@@ -166,11 +170,15 @@ The package uses the real API at `/api` on the same host, regardless of your loc
 
 Use `-Runtime linux-arm64` for ARM Linux or `-Runtime win-x64` for a Windows package. The default `linux-x64` target matches the Proxmox installer, which supports Intel/AMD hosts.
 
+Release builds exclude local `.env` files. To set the new-project hourly rate, pass `-DefaultHourlyRate 150` to the release script or set the `VITE_DEFAULT_HOURLY_RATE` environment variable before running it. The parameter takes precedence; the fallback is `100`. This value is embedded in the frontend at build time.
+
 ### Publish a GitHub release
 
 The workflow in `.github/workflows/release.yml` builds and publishes the Linux ZIP when a version tag is pushed to GitHub. After the code is available at `jeffvpascale/timeledger`, create and push a tag such as `v1.0.0` to that GitHub repository. The workflow uses the same release script, runs lint and build checks, verifies the Linux app starts with an empty SQLite database, and attaches `timeledger-v1.0.0-linux-x64.zip` to the release.
 
 The repository and first release must be publicly accessible before the download commands below will work. Azure DevOps does not run GitHub Actions.
+
+For GitHub release builds, optionally set the repository Actions variable `VITE_DEFAULT_HOURLY_RATE` (for example, `150`). If unset, releases use `100`.
 
 ## Install on Proxmox
 
@@ -223,7 +231,16 @@ The API currently has no authentication. The project is intended for local devel
 
 ## Scope
 
-This project focuses on manual, project-based time tracking. Timers, invoice generation, retainer calculations, and multi-user authentication are outside its current scope.
+TimeLedger focuses on manual, project-based time tracking. Timers, invoice generation, and retainer calculations are outside its current scope.
+
+The application currently operates without authentication and is intended for personal use on a trusted network. The API should not be exposed publicly without appropriate security controls.
+
+### Potential Future Enhancements
+
+- User authentication using ASP.NET Core Identity
+- User-specific data access and protected API endpoints
+- Invoice generation and additional reporting features
+
 
 ## License
 

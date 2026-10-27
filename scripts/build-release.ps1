@@ -6,7 +6,9 @@ param(
     [string]$Version = 'v0.1.0',
 
     [ValidateSet('linux-x64', 'linux-arm64', 'win-x64')]
-    [string]$Runtime = 'linux-x64'
+    [string]$Runtime = 'linux-x64',
+
+    [string]$DefaultHourlyRate = $env:VITE_DEFAULT_HOURLY_RATE
 )
 
 #Requires -Version 7.0
@@ -37,6 +39,7 @@ $archiveName = "timeledger-$Version-$Runtime.zip"
 $archivePath = Join-Path $artifactsDir $archiveName
 $savedMockSetting = $env:VITE_USE_MOCKS
 $savedApiUrl = $env:VITE_API_BASE_URL
+$savedHourlyRate = $env:VITE_DEFAULT_HOURLY_RATE
 
 New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 Push-Location $repoRoot
@@ -56,6 +59,7 @@ try {
         # Environment variables override Vite .env files without modifying them.
         $env:VITE_USE_MOCKS = 'false'
         $env:VITE_API_BASE_URL = '/api'
+        $env:VITE_DEFAULT_HOURLY_RATE = if ([string]::IsNullOrWhiteSpace($DefaultHourlyRate)) { '100' } else { $DefaultHourlyRate }
         Write-Host 'Building the frontend for the bundled API...'
         Invoke-Checked 'npm' @('run', 'build')
     }
@@ -96,6 +100,7 @@ try {
 finally {
     $env:VITE_USE_MOCKS = $savedMockSetting
     $env:VITE_API_BASE_URL = $savedApiUrl
+    $env:VITE_DEFAULT_HOURLY_RATE = $savedHourlyRate
     Pop-Location
 
     # Only remove the unique staging directory created by this invocation.

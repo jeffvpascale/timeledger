@@ -39,6 +39,7 @@ jobs:
         shell: pwsh
         env:
           RELEASE_TAG: ${{ github.ref_name }}
+          VITE_DEFAULT_HOURLY_RATE: ${{ vars.VITE_DEFAULT_HOURLY_RATE }}
         run: ./scripts/build-release.ps1 -Version $env:RELEASE_TAG
       - name: Check the Linux package starts
         shell: bash
