@@ -1,0 +1,98 @@
+// Override Bootstrap theme variables
+$primary: #267d8a;
+$secondary: #64748b;
+$success: #198754;
+$danger: #dc3545;
+
+// Typography
+$font-family-sans-serif: "Inter", sans-serif;
+$font-size-base: 1rem;
+$headings-font-weight: 600;
+
+// Global border radius
+$border-radius: 1rem;
+$border-radius-sm: 0.5rem;
+$border-radius-lg: 1rem;
+
+// Import Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// Dark mode overrides
+[data-bs-theme="dark"] {
+
+    // Main colors
+    --bs-primary: #55b6c4;
+    --bs-secondary: #94a3b8;
+
+    // Backgrounds
+    --bs-body-bg: #101820;
+    --bs-body-bg-rgb: 16, 24, 32;
+    --bs-secondary-bg: #1b2730;
+    --bs-secondary-bg-rgb: 27, 39, 48;
+    --bs-tertiary-bg: #24323d;
+    --bs-tertiary-bg-rgb: 36, 50, 61;
+
+    // Text and borders
+    --bs-body-color: #e2e8f0;
+    --bs-body-color-rgb: 226, 232, 240;
+    --bs-border-color: #344450;
+
+    // Primary buttons
+    .btn-primary {
+        --bs-btn-bg: #267d8a;
+        --bs-btn-border-color: #267d8a;
+        --bs-btn-hover-bg: #206b76;
+        --bs-btn-hover-border-color: #206b76;
+        --bs-btn-active-bg: #1b5c66;
+        --bs-btn-active-border-color: #1b5c66;
+        --bs-btn-color: #fff;
+        --bs-btn-hover-color: #fff;
+    }
+
+    .table-primary {
+        --bs-table-bg: #42616a;
+        --bs-table-color: #ffffff;
+        --bs-table-border-color: #526f78;
+    }
+
+    // Billed rows
+    .table-success {
+        --bs-table-bg: #25473e;
+        --bs-table-color: #e2e8f0;
+        --bs-table-border-color: #3d6257;
+    }
+
+    // Unbilled rows
+    .table-danger {
+        --bs-table-bg: #502e38;
+        --bs-table-color: #e2e8f0;
+        --bs-table-border-color: #70404a;
+    }
+
+    // Non-billable rows
+    .table-secondary {
+        --bs-table-bg: #35414c;
+        --bs-table-color: #e2e8f0;
+        --bs-table-border-color: #4b5966;
+    }
+}
+
+// Smooth background transition
+body {
+    transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+// Circular theme transition
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+    z-index: 1;
+}
+
+::view-transition-old(root) {
+    z-index: 0;
+}

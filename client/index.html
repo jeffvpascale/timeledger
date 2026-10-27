@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Restore the theme before the page paints to avoid a flash of dark mode.
+      try {
+        const theme = localStorage.getItem("timeledger-theme");
+        if (theme === "light" || theme === "dark") {
+          document.documentElement.setAttribute("data-bs-theme", theme);
+        }
+      } catch {
+        // Keep the default theme when browser storage is unavailable.
+      }
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TimeLedger</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

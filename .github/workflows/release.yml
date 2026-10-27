@@ -1,0 +1,83 @@
+name: Build Linux release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Validate version and shell scripts
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+          bash -n proxmox/create-lxc.sh
+          bash -n proxmox/install.sh
+      - name: Build release package
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: ./scripts/build-release.ps1 -Version $env:RELEASE_TAG
+      - name: Check the Linux package starts
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          app_dir="$RUNNER_TEMP/timeledger-check"
+          mkdir -p "$app_dir"
+          unzip -q "artifacts/timeledger-${RELEASE_TAG}-linux-x64.zip" -d "$app_dir"
+          chmod +x "$app_dir/TimeLedger.Api"
+          cd "$app_dir"
+          export ASPNETCORE_ENVIRONMENT=Production
+          export ConnectionStrings__DefaultConnection="Data Source=$RUNNER_TEMP/timeledger-check.db"
+          ./TimeLedger.Api --urls http://127.0.0.1:15173 > "$RUNNER_TEMP/timeledger-check.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for attempt in {1..30}; do
+            if curl -fsS --max-time 2 http://127.0.0.1:15173/ >/dev/null 2>&1; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+          if [[ "$ready" != true ]]; then
+            cat "$RUNNER_TEMP/timeledger-check.log"
+            exit 1
+          fi
+          curl -fsS http://127.0.0.1:15173/api/client | jq -e 'type == "array" and length == 0'
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          asset="artifacts/timeledger-${RELEASE_TAG}-linux-x64.zip"
+          if gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" "$asset" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$RELEASE_TAG" "$asset" --repo "$GITHUB_REPOSITORY" \
+              --verify-tag --title "TimeLedger $RELEASE_TAG" --generate-notes
+          fi
