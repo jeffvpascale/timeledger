@@ -7,6 +7,7 @@ namespace TimeLedger.Api.Data.Entities
 		public int Id { get; set; }
 
 		[Required]
+		[MaxLength(100)]
 		public required string Name { get; set; } = string.Empty;
 
 		public bool IsArchived { get; set; }

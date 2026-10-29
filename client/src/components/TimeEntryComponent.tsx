@@ -268,6 +268,7 @@ export default function TimeEntry({
           </label>
           <textarea
             className={`form-control ${errors.description ? "is-invalid" : ""}`}
+            maxLength={500}
             id="descriptionTextArea"
             rows={3}
             value={timeEntryDescription}
@@ -516,7 +517,9 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showBilledCheckbox"
                   checked={showBilled}
-                  onChange={(e) => onPreferencesChange({ showBilled: e.target.checked })}
+                  onChange={(e) =>
+                    onPreferencesChange({ showBilled: e.target.checked })
+                  }
                 />
                 <label
                   className="form-check-label"
@@ -532,7 +535,9 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showuUnbilledCheckbox"
                   checked={showUnbilled}
-                  onChange={(e) => onPreferencesChange({ showUnbilled: e.target.checked })}
+                  onChange={(e) =>
+                    onPreferencesChange({ showUnbilled: e.target.checked })
+                  }
                 />
                 <label
                   className="form-check-label"
@@ -548,7 +553,9 @@ export default function TimeEntry({
                   type="checkbox"
                   id="showuNonBillableCheckbox"
                   checked={showNonBillable}
-                  onChange={(e) => onPreferencesChange({ showNonBillable: e.target.checked })}
+                  onChange={(e) =>
+                    onPreferencesChange({ showNonBillable: e.target.checked })
+                  }
                 />
                 <label
                   className="form-check-label"
@@ -561,12 +568,16 @@ export default function TimeEntry({
           </div>
 
           <div className="d-flex align-items-center gap-2">
-            <label htmlFor="timeEntrySort" className="small m-0">Sort</label>
+            <label htmlFor="timeEntrySort" className="small m-0">
+              Sort
+            </label>
             <select
               id="timeEntrySort"
               className="form-select"
               value={sortMode}
-              onChange={(e) => onPreferencesChange({ sortMode: e.target.value as SortMode })}
+              onChange={(e) =>
+                onPreferencesChange({ sortMode: e.target.value as SortMode })
+              }
             >
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>

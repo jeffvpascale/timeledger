@@ -9,6 +9,7 @@ namespace TimeLedger.Api.Data.Entities
 		public DateOnly Date { get; set; }
 
 		[Required]
+		[MaxLength(500)]
 		public required string Description { get; set; } = string.Empty;
 
 		[Range(0.01, double.MaxValue)]

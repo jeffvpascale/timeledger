@@ -2,16 +2,28 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const REQUEST_TIMEOUT_MS = 10_000;
 
+export class ApiError extends Error {
+    status: number;
+
+    constructor(message: string, status: number) {
+        super(message);
+        this.name = "ApiError";
+        this.status = status;
+    }
+}
+
 function requestSignal(signal?: AbortSignal): AbortSignal {
     const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
     return signal ? AbortSignal.any([signal, timeout]) : timeout;
 }
 
+
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-            errorData.message || `HTTP error! status: ${response.status}`
+        throw new ApiError(
+            errorData.message || `HTTP error! status: ${response.status}`,
+            response.status
         );
     }
 

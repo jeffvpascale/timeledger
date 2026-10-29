@@ -140,6 +140,7 @@ export default function ClientSelector({
           <label htmlFor="clientNameInput">Client Name</label>
           <input
             type="text"
+            maxLength={100}
             className={`form-control ${clientNameError ? "is-invalid" : ""}`}
             id="clientNameInput"
             placeholder="Enter client name"

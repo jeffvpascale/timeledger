@@ -1,4 +1,4 @@
-import { type TimeEntry, type BillingStatus } from './../types/TimeEntry';
+import { type TimeEntry, type BillingStatus } from '../types/TimeEntry';
 import { apiClient } from './apiService';
 import * as mockService from './MockServices/MockTimeEntryService';
 import { useMocks } from './serviceConfig';

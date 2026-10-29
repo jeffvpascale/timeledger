@@ -173,6 +173,7 @@ export default function ProjectSelector({
           <label htmlFor="projectNameInput">Project Name</label>
           <input
             type="text"
+            maxLength={100}
             className={`form-control ${errors.name ? "is-invalid" : ""}`}
             id="projectNameInput"
             placeholder="Enter project name"
@@ -195,6 +196,7 @@ export default function ProjectSelector({
           </label>
           <textarea
             className="form-control"
+            maxLength={500}
             id="projectDescriptionInput"
             placeholder="Describe the project"
             value={projectDescription}

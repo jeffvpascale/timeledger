@@ -1,28 +1,30 @@
 import { useState, useEffect } from "react";
-import "./App.css";
-import ClientSelector, { type Status } from "./components/ClientSelector";
-import ProjectSelector from "./components/ProjectSelector";
-import TimeEntryComponent from "./components/TimeEntryComponent";
-import type { Client } from "./types/Client";
-import type { Project } from "./types/Project";
-import { getClients, updateClient, addClient } from "./services/ClientService";
+import ClientSelector, { type Status } from "../components/ClientSelector";
+import ProjectSelector from "../components/ProjectSelector";
+import TimeEntryComponent from "../components/TimeEntryComponent";
+import type { Client } from "../types/Client";
+import type { Project } from "../types/Project";
+import { getClients, updateClient, addClient } from "../services/clientService";
 import {
   getProjectsByClientId,
   addProject,
   updateProject,
-} from "./services/ProjectService";
-import type { TimeEntry, BillingStatus } from "./types/TimeEntry";
+} from "../services/projectService";
+import type { TimeEntry, BillingStatus } from "../types/TimeEntry";
 import {
   addTimeEntry,
   deleteTimeEntry,
   getTimeEntriesByProjectId,
   updateTimeEntry,
   updateBillingStatus,
-} from "./services/TimeEntryService";
-import ThemeToggle from "./components/ThemeToggle";
-import { loadViewPreferences, saveViewPreferences, type ViewPreferences } from "./services/viewPreferences";
+} from "../services/timeEntryService";
+import {
+  loadViewPreferences,
+  saveViewPreferences,
+  type ViewPreferences,
+} from "../services/viewPreferences";
 
-function App() {
+function TimeLedger() {
   // Development Testing Variables
 
   // ========================================
@@ -80,8 +82,11 @@ function App() {
         if (controller.signal.aborted) return;
         setClientList(clients);
 
-        const client = clients.find((item) => item.id === savedPreferences.clientId &&
-          (savedPreferences.showArchivedClients || !item.isArchived));
+        const client = clients.find(
+          (item) =>
+            item.id === savedPreferences.clientId &&
+            (savedPreferences.showArchivedClients || !item.isArchived),
+        );
         if (!client) return;
 
         const projects = await getProjectsByClientId(client.id);
@@ -90,8 +95,11 @@ function App() {
         setProjectList(projects);
         setIsProjectSelectorHidden(false);
 
-        const project = projects.find((item) => item.id === savedPreferences.projectId &&
-          (savedPreferences.showArchivedProjects || !item.isArchived));
+        const project = projects.find(
+          (item) =>
+            item.id === savedPreferences.projectId &&
+            (savedPreferences.showArchivedProjects || !item.isArchived),
+        );
         if (!project) return;
 
         const entries = await getTimeEntriesByProjectId(project.id);
@@ -175,9 +183,19 @@ function App() {
 
   useEffect(() => {
     if (!isLoadingClientList && !clientLoadError) {
-      saveViewPreferences({ ...preferences, clientId: selectedClientId, projectId: selectedProjectId });
+      saveViewPreferences({
+        ...preferences,
+        clientId: selectedClientId,
+        projectId: selectedProjectId,
+      });
     }
-  }, [preferences, selectedClientId, selectedProjectId, isLoadingClientList, clientLoadError]);
+  }, [
+    preferences,
+    selectedClientId,
+    selectedProjectId,
+    isLoadingClientList,
+    clientLoadError,
+  ]);
 
   function clearProjectSelection() {
     setSelectedProjectId(null);
@@ -271,7 +289,6 @@ function App() {
   // ========================================
   // Time Entry State
   // ========================================
-
 
   async function handleTimeEntryAdd(
     date: string,
@@ -368,13 +385,6 @@ function App() {
               </p>
             </div>
           </div>
-
-          <div
-            className="position-fixed bottom-0 end-0 p-3"
-            style={{ zIndex: 1000 }}
-          >
-            <ThemeToggle />
-          </div>
         </div>
         {/* Client Selector */}
         {clientLoadError ? (
@@ -453,4 +463,4 @@ function App() {
   );
 }
 
-export default App;
+export default TimeLedger;

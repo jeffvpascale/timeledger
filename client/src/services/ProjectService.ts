@@ -1,4 +1,4 @@
-import type { Project } from './../types/Project';
+import type { Project } from '../types/Project';
 import { apiClient } from './apiService';
 import * as mockService from './MockServices/MockProjectService';
 import { useMocks } from './serviceConfig';
