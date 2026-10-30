@@ -41,6 +41,9 @@ jobs:
         run: npm ci
 
       - name: Build application
+        env:
+          VITE_USE_MOCKS: "true"
+          VITE_DEFAULT_HOURLY_RATE: "150"
         run: npm run build
 
       - name: Configure Pages
