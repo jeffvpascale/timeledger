@@ -14,5 +14,10 @@ namespace TimeLedger.Api.Data.Entities
 
 		public ICollection<Project> Projects { get; } = new List<Project>();
 
+		[Required]
+		public string UserId { get; set; } = string.Empty;
+
+		public ApplicationUser User { get; set; } = null!;
+
 	}
 }

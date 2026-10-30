@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using TimeLedger.Api.Data.Entities;
 
 namespace TimeLedger.Api.Data
 {
-	public class TimeLedgerDbContext : DbContext
+	public class TimeLedgerDbContext : IdentityDbContext<ApplicationUser>
 	{
 		public TimeLedgerDbContext(DbContextOptions<TimeLedgerDbContext> options) : base(options)
 		{
@@ -11,6 +12,7 @@ namespace TimeLedger.Api.Data
 
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
+			base.OnModelCreating(modelBuilder);
 			modelBuilder.Entity<Project>()
 				.HasOne(p => p.Client)
 				.WithMany(c => c.Projects)
@@ -22,7 +24,7 @@ namespace TimeLedger.Api.Data
 				.OnDelete(DeleteBehavior.Restrict);
 
 			modelBuilder.Entity<Client>()
-				.HasIndex(c => c.Name)
+				.HasIndex(c => new { c.UserId, c.Name })
 				.IsUnique();
 		}
 

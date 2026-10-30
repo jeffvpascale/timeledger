@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeLedger.Api.Data;
 using TimeLedger.Api.Data.Dtos;
@@ -11,18 +13,27 @@ namespace TimeLedger.Api.Controllers
 	public class ProjectController : ControllerBase
 	{
 		private readonly TimeLedgerDbContext _db;
+		private readonly UserManager<ApplicationUser> _userManager;
 
-		public ProjectController(TimeLedgerDbContext db)
+		public ProjectController(TimeLedgerDbContext db, UserManager<ApplicationUser> userManager)
 		{
 			_db = db;
+			_userManager = userManager;
 		}
 
+		[Authorize]
 		[HttpGet("{clientId:int}")]
 		public async Task<ActionResult<IEnumerable<ProjectResponseDto>>> GetProjectsByClientIdAsync(int clientId)
 		{
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+
 			var responseDto = await _db.Projects
 				.AsNoTracking()
-				.Where(p => p.ClientId == clientId)
+				.Where(p => p.ClientId == clientId && p.Client.UserId == userId)
 				.OrderBy(p => p.Name)
 				.Select(p => new ProjectResponseDto
 				{
@@ -37,12 +48,19 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
+		[Authorize]
 		[HttpGet("{clientId:int}/{projectId:int}", Name = nameof(GetProjectByIdAsync))]
 		public async Task<ActionResult<ProjectResponseDto>> GetProjectByIdAsync(int clientId, int projectId)
 		{
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+
 			var responseDto = await _db.Projects
 				.AsNoTracking()
-				.Where(p => p.ClientId == clientId && p.Id == projectId)
+				.Where(p => p.ClientId == clientId && p.Client.UserId == userId && p.Id == projectId)
 				.Select(p => new ProjectResponseDto
 				{
 					Id = p.Id,
@@ -61,9 +79,25 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
+		[Authorize]
 		[HttpPost]
 		public async Task<ActionResult<ProjectResponseDto>> CreateProjectAsync([FromBody] ProjectCreateDto projectDto)
 		{
+			var userId = _userManager.GetUserId(User);
+
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+
+			var clientExists = await _db.Clients
+				.AnyAsync(c => c.Id == projectDto.ClientId && c.UserId == userId);
+
+			if (!clientExists)
+			{
+				return NotFound();
+			}
+
 			Project newProject = new Project
 			{
 				Name = projectDto.Name,
@@ -92,10 +126,17 @@ namespace TimeLedger.Api.Controllers
 			);
 		}
 
+		[Authorize]
 		[HttpPut("{id:int}")]
 		public async Task<ActionResult<ProjectResponseDto>> UpdateProjectAsync(int id, [FromBody] ProjectUpdateDto projectDto)
 		{
-			var updateProject = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+
+			var updateProject = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id && p.Client.UserId == userId);
 			if (updateProject == null)
 			{
 				return NotFound();

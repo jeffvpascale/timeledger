@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TimeLedger.Api.Data;
 using TimeLedger.Api.Data.Dtos;
@@ -11,18 +13,27 @@ namespace TimeLedger.Api.Controllers
 	public class TimeEntryController : ControllerBase
 	{
 		private readonly TimeLedgerDbContext _db;
+		private readonly UserManager<ApplicationUser> _userManager;
 
-		public TimeEntryController(TimeLedgerDbContext db)
+		public TimeEntryController(TimeLedgerDbContext db, UserManager<ApplicationUser> userManager)
 		{
 			_db = db;
+			_userManager = userManager;
 		}
 
+		[Authorize]
 		[HttpGet("{projectId:int}")]
 		public async Task<ActionResult<IEnumerable<TimeEntryResponseDto>>> GetTimeEntriesByProjectIdAsync(int projectId)
 		{
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+
 			var responseDto = await _db.TimeEntries
 				.AsNoTracking()
-				.Where(te => te.ProjectId == projectId)
+				.Where(te => te.ProjectId == projectId && te.Project.Client.UserId == userId)
 				.OrderBy(te => te.Date)
 				.Select(te => new TimeEntryResponseDto
 				{
@@ -37,12 +48,18 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
+		[Authorize]
 		[HttpGet("{projectId:int}/{timeEntryId:int}", Name = nameof(GetTimeEntryByIdAsync))]
 		public async Task<ActionResult<TimeEntryResponseDto>> GetTimeEntryByIdAsync(int projectId, int timeEntryId)
 		{
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
 			var responseDto = await _db.TimeEntries
 				.AsNoTracking()
-				.Where(te => te.ProjectId == projectId && te.Id == timeEntryId)
+				.Where(te => te.ProjectId == projectId && te.Id == timeEntryId && te.Project.Client.UserId == userId)
 				.Select(te => new TimeEntryResponseDto
 				{
 					Id = te.Id,
@@ -61,9 +78,25 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
+		[Authorize]
 		[HttpPost]
 		public async Task<ActionResult<TimeEntryResponseDto>> CreateTimeEntryAsync([FromBody] TimeEntryCreateDto timeEntryDto)
 		{
+
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+			var projectId = timeEntryDto.ProjectId;
+			var projectExists = await _db.Projects
+				.AnyAsync(p => p.Id == projectId && p.Client.UserId == userId);
+
+			if (!projectExists)
+			{
+				return NotFound();
+			}
+
 			if (timeEntryDto.Date is not DateOnly date)
 			{
 				return BadRequest("A date is required.");
@@ -71,7 +104,7 @@ namespace TimeLedger.Api.Controllers
 			TimeEntry newTimeEntry = new TimeEntry
 			{
 
-				Date = timeEntryDto.Date.Value,
+				Date = date,
 				Description = timeEntryDto.Description,
 				TimeSpent = timeEntryDto.TimeSpent,
 				BillingStatus = timeEntryDto.BillingStatus,
@@ -97,10 +130,19 @@ namespace TimeLedger.Api.Controllers
 			);
 		}
 
+		[Authorize]
 		[HttpPut("{id:int}")]
 		public async Task<ActionResult<TimeEntryResponseDto>> UpdateTimeEntryAsync(int id, [FromBody] TimeEntryUpdateDto timeEntryDto)
 		{
-			var updateTimeEntry = await _db.TimeEntries.FirstOrDefaultAsync(p => p.Id == id);
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+			var updateTimeEntry = await _db.TimeEntries
+				.FirstOrDefaultAsync(te =>
+					te.Id == id && te.Project.Client.UserId == userId);
+
 			if (updateTimeEntry == null)
 			{
 				return NotFound();
@@ -110,7 +152,7 @@ namespace TimeLedger.Api.Controllers
 			{
 				return BadRequest("A date is required.");
 			}
-			updateTimeEntry.Date = timeEntryDto.Date.Value;
+			updateTimeEntry.Date = date;
 			updateTimeEntry.Description = timeEntryDto.Description;
 			updateTimeEntry.TimeSpent = timeEntryDto.TimeSpent;
 			updateTimeEntry.BillingStatus = timeEntryDto.BillingStatus;
@@ -129,10 +171,19 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
+		[Authorize]
 		[HttpPatch("{id:int}")]
 		public async Task<ActionResult<TimeEntryResponseDto>> UpdateBillingStatus(int id, [FromBody] BillingStatus billingStatus)
 		{
-			var updateTimeEntry = await _db.TimeEntries.FirstOrDefaultAsync(p => p.Id == id);
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+			var updateTimeEntry = await _db.TimeEntries
+				.FirstOrDefaultAsync(te =>
+					te.Id == id && te.Project.Client.UserId == userId);
+
 			if (updateTimeEntry == null)
 			{
 				return NotFound();
@@ -154,11 +205,18 @@ namespace TimeLedger.Api.Controllers
 			return Ok(responseDto);
 		}
 
-
+		[Authorize]
 		[HttpDelete("{id:int}")]
 		public async Task<IActionResult> DeleteTimeEntryAsync(int id)
 		{
-			var timeEntry = await _db.TimeEntries.FirstOrDefaultAsync(te => te.Id == id);
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return Unauthorized();
+			}
+			var timeEntry = await _db.TimeEntries
+				.FirstOrDefaultAsync(te =>
+					te.Id == id && te.Project.Client.UserId == userId);
 			if (timeEntry == null)
 			{
 				return NotFound();
