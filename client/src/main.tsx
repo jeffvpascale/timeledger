@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
@@ -19,8 +20,7 @@ import { AuthProvider } from "./context/AuthContext.tsx";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Account />,
-    //errorElement: <NotFound />, // Handles 404s/errors
+    element: <Login />,
   },
   {
     path: "/login",
@@ -31,12 +31,17 @@ const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/account",
-    element: <Account />,
-  },
-  {
-    path: "/time-ledger",
-    element: <TimeLedger />,
+    element: <ProtectedRoute />,
+    children: [
+      {
+        path: "/account",
+        element: <Account />,
+      },
+      {
+        path: "/time-ledger",
+        element: <TimeLedger />,
+      },
+    ],
   },
 ]);
 

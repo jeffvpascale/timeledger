@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type SubmitEvent } from "react";
 import type { Project } from "../types/Project";
 import type { BillingStatus, TimeEntry } from "../types/TimeEntry";
 import type { ViewPreferences } from "../services/viewPreferences";
+import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 interface TimeEntryProps {
   preferences: ViewPreferences;
@@ -76,7 +77,9 @@ export default function TimeEntry({
 
   // Loading and Error State
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
+    null,
+  );
   const [errors, setErrors] = useState<TimeEntryErrors>({});
   const [loadingEntryIds, setLoadingEntryIds] = useState<Set<number>>(
     new Set(),
@@ -123,12 +126,7 @@ export default function TimeEntry({
         ? renderForm()
         : renderComponent()}
 
-      {/* General Error Message */}
-      <div
-        className={`alert alert-danger fade my-3 ${errorMsg ? "show" : "d-none"}`}
-      >
-        <p className="text-danger mb-0">{errorMsg}</p>
-      </div>
+      <MessageBox statusMessage={statusMessage} />
     </div>
   );
 
@@ -145,7 +143,7 @@ export default function TimeEntry({
       // Save Time Entry
       try {
         event.preventDefault();
-        setErrorMsg("");
+        setStatusMessage(null);
 
         // Validate Fields
         const timeEntryErrors: TimeEntryErrors = {};
@@ -194,10 +192,16 @@ export default function TimeEntry({
           setStatus("viewing");
         }
       } catch (error) {
-        setErrorMsg(
+        setStatusMessage(
           error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
         );
       } finally {
         setIsLoading(false);
@@ -387,7 +391,17 @@ export default function TimeEntry({
           setStatus("adding");
         }
       } catch (error) {
-        setErrorMsg(error instanceof Error ? error.message : "Delete failed.");
+        setStatusMessage(
+          error instanceof Error
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
+        );
       } finally {
         setLoadingEntryIds((prev) => {
           const next = new Set(prev);
@@ -414,7 +428,17 @@ export default function TimeEntry({
       try {
         await onTimeEntryEditBillingStatus(timeEntry.id, billingStatus);
       } catch (error) {
-        setErrorMsg(error instanceof Error ? error.message : "Update failed.");
+        setStatusMessage(
+          error instanceof Error
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
+        );
       } finally {
         setLoadingEntryIds((prev) => {
           const next = new Set(prev);

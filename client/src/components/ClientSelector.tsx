@@ -1,5 +1,6 @@
 import React, { useState, type SubmitEvent } from "react";
 import type { Client } from "../types/Client";
+import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 // Component Props
 interface ClientSelectorProps {
@@ -45,7 +46,9 @@ export default function ClientSelector({
   );
 
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
+    null,
+  );
   const [clientNameError, setClientNameError] = useState("");
 
   // Update Mode and Notify Parent
@@ -67,13 +70,7 @@ export default function ClientSelector({
       {status !== "selecting" || clientList.length === 0
         ? renderForm()
         : renderSelect()}
-
-      {/* General Error Message */}
-      <div
-        className={`alert alert-danger fade my-3 ${errorMsg ? "show" : "d-none"}`}
-      >
-        <p className="text-danger mb-0">{errorMsg}</p>
-      </div>
+      <MessageBox statusMessage={statusMessage} />
     </div>
   );
 
@@ -83,7 +80,7 @@ export default function ClientSelector({
     async function handleSaveClient(event: SubmitEvent): Promise<void> {
       try {
         event.preventDefault();
-        setErrorMsg("");
+        setStatusMessage(null);
 
         const clientNameTrimmed = clientName.trim();
         if (!clientNameTrimmed) {
@@ -118,10 +115,16 @@ export default function ClientSelector({
           changeStatus("selecting");
         }
       } catch (error) {
-        setErrorMsg(
+        setStatusMessage(
           error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
         );
       } finally {
         setIsLoading(false);
@@ -179,7 +182,7 @@ export default function ClientSelector({
               className="btn btn-outline-primary"
               disabled={isLoading}
               onClick={() => {
-                setErrorMsg("");
+                setStatusMessage(null);
                 setClientNameError("");
                 changeStatus("selecting");
               }}
@@ -215,14 +218,20 @@ export default function ClientSelector({
     ): Promise<void> {
       try {
         ResetClient();
-        setErrorMsg("");
+        setStatusMessage(null);
         setIsLoading(true);
         await onClientChange(Number(e.target.value));
       } catch (error) {
-        setErrorMsg(
+        setStatusMessage(
           error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
         );
       } finally {
         setIsLoading(false);

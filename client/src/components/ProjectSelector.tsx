@@ -2,6 +2,7 @@ import React, { useState, type SubmitEvent } from "react";
 import type { Client } from "../types/Client";
 import type { Project } from "../types/Project";
 import { defaultHourlyRate } from "../services/serviceConfig";
+import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 // Component Props
 interface ProjectSelectorProps {
@@ -65,7 +66,9 @@ export default function ProjectSelector({
 
   // Loading and Error State
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
+    null,
+  );
   const [errors, setErrors] = useState<ProjectErrors>({});
 
   // Update Mode and Notify Parent
@@ -94,12 +97,7 @@ export default function ProjectSelector({
         ? renderForm()
         : renderSelect()}
 
-      {/* General Error Message */}
-      <div
-        className={`alert alert-danger fade my-3 ${errorMsg ? "show" : "d-none"}`}
-      >
-        <p className="text-danger mb-0">{errorMsg}</p>
-      </div>
+      <MessageBox statusMessage={statusMessage} />
     </div>
   );
 
@@ -109,7 +107,7 @@ export default function ProjectSelector({
     async function handleSaveProject(event: SubmitEvent): Promise<void> {
       try {
         event.preventDefault();
-        setErrorMsg("");
+        setStatusMessage(null);
 
         // Validate Fields
         const projectErrors: ProjectErrors = {};
@@ -151,10 +149,16 @@ export default function ProjectSelector({
           changeStatus("selecting");
         }
       } catch (error) {
-        setErrorMsg(
+        setStatusMessage(
           error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
         );
       } finally {
         setIsLoading(false);
@@ -290,14 +294,20 @@ export default function ProjectSelector({
       e: React.ChangeEvent<HTMLSelectElement>,
     ): Promise<void> {
       try {
-        setErrorMsg("");
+        setStatusMessage(null);
         setIsLoading(true);
         await onProjectChange(Number(e.target.value));
       } catch (error) {
-        setErrorMsg(
+        setStatusMessage(
           error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
+            ? {
+                message: error.message,
+                isSuccess: false,
+              }
+            : {
+                message: "An unexpected error occurred.",
+                isSuccess: false,
+              },
         );
       } finally {
         setIsLoading(false);

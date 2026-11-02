@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../services/authService";
+import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 interface RegisterErrors {
   firstName?: string;
@@ -21,15 +23,19 @@ export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [errorMsg, setErrorMsg] = useState("");
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
+    null,
+  );
   const [registerErrors, setRegisterErrors] = useState<RegisterErrors>({});
 
-  function handleRegisterSubmit(
+  const navigate = useNavigate();
+
+  async function handleRegisterSubmit(
     event: React.SubmitEvent<HTMLFormElement>,
-  ): void {
+  ): Promise<void> {
     try {
       event.preventDefault();
-      setErrorMsg("");
+      setStatusMessage(null);
 
       const formErrors: RegisterErrors = {};
 
@@ -64,11 +70,26 @@ export default function Register() {
       if (Object.keys(formErrors).length > 0) {
         return;
       }
+
+      setIsLoading(true);
+      await registerUser(firstName, lastName, company, email, password);
+      navigate("/login", {
+        state: {
+          message: "Account created successfully. Please sign in.",
+          isSuccess: true,
+        },
+      });
     } catch (error) {
-      setErrorMsg(
+      setStatusMessage(
         error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.",
+          ? {
+              message: error.message,
+              isSuccess: false,
+            }
+          : {
+              message: "An unexpected error occurred.",
+              isSuccess: false,
+            },
       );
     } finally {
       setIsLoading(false);
@@ -199,7 +220,7 @@ export default function Register() {
                   <input
                     type={showPassword ? "text" : "password"}
                     maxLength={128}
-                    className={`form-control ${registerErrors.password ? "is-invalid" : ""}`}
+                    className={`form-control rounded-end-0 ${registerErrors.password ? "is-invalid" : ""}`}
                     id="password"
                     placeholder="Create a password"
                     value={password}
@@ -247,7 +268,7 @@ export default function Register() {
                   <input
                     type={showConfirmPassword ? "text" : "password"}
                     maxLength={128}
-                    className={`form-control  ${registerErrors.confirmPassword ? "is-invalid" : ""}`}
+                    className={`form-control rounded-end-0  ${registerErrors.confirmPassword ? "is-invalid" : ""}`}
                     id="confirmPassword"
                     placeholder="Confirm your password"
                     value={confirmPassword}
@@ -268,7 +289,7 @@ export default function Register() {
                     }
                   >
                     <i
-                      className={`bi bi-eye${showPassword ? "-slash" : ""}`}
+                      className={`bi bi-eye${showConfirmPassword ? "-slash" : ""}`}
                     ></i>
                   </button>
                   {registerErrors.confirmPassword && (
@@ -294,12 +315,7 @@ export default function Register() {
             </Link>
           </p>
         </div>
-      </div>
-      {/* General Error Message */}
-      <div
-        className={`alert alert-danger fade my-3 ${errorMsg ? "show" : "d-none"}`}
-      >
-        <p className="text-danger mb-0">{errorMsg}</p>
+        <MessageBox statusMessage={statusMessage} />
       </div>
     </div>
   );

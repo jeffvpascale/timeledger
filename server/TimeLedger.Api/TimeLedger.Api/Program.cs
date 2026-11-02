@@ -34,6 +34,21 @@ builder.Services.Configure<IdentityOptions>(options =>
 	options.Password.RequireUppercase = true;
 	options.Password.RequireLowercase = true;
 	options.Password.RequireNonAlphanumeric = true;
+	options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+	options.Lockout.MaxFailedAccessAttempts = 5;
+	options.Lockout.AllowedForNewUsers = true;
+});
+
+builder.Services.AddAuthentication(options =>
+{
+	options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+	options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+});
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+	options.Cookie.SameSite = SameSiteMode.None;
+	options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 builder.Services.AddAuthorization();
@@ -44,7 +59,8 @@ builder.Services.AddCors(options =>
 	{
 		policy.WithOrigins("http://localhost:5173")
 			  .AllowAnyHeader()
-			  .AllowAnyMethod();
+			  .AllowAnyMethod()
+			  .AllowCredentials();
 	});
 });
 
@@ -71,8 +87,6 @@ app.UseCors("AllowReact");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
-app.MapIdentityApi<ApplicationUser>();
 
 app.MapControllers();
 

@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
+import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 // Field Validation Errors
 interface LoginErrors {
@@ -10,16 +12,37 @@ interface LoginErrors {
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [shouldRemember, setShouldRemember] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [errorMsg, setErrorMsg] = useState("");
   const [loginErrors, setLoginErrors] = useState<LoginErrors>({});
 
-  function handleSubmit(event: React.SubmitEvent<HTMLFormElement>): void {
+  const { login } = useAuthContext();
+
+  const navigate = useNavigate();
+
+  const location = useLocation();
+
+  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
+    () => location.state ?? null,
+  );
+
+  useEffect(() => {
+    if (location.state) {
+      navigate(location.pathname, {
+        replace: true,
+        state: null,
+      });
+    }
+  }, [location.state, location.pathname, navigate]);
+
+  async function handleSubmit(
+    event: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> {
     try {
       event.preventDefault();
-      setErrorMsg("");
+      setStatusMessage(null);
 
       const formErrors: LoginErrors = {};
       const emailInput = event.currentTarget.elements.namedItem(
@@ -36,11 +59,20 @@ export default function Login() {
       if (Object.keys(formErrors).length > 0) {
         return;
       }
+      setIsLoading(true);
+      await login(email, password, shouldRemember);
+      navigate("/time-ledger");
     } catch (error) {
-      setErrorMsg(
+      setStatusMessage(
         error instanceof Error
-          ? error.message
-          : "An unexpected error occurred.",
+          ? {
+              message: error.message,
+              isSuccess: false,
+            }
+          : {
+              message: "An unexpected error occurred.",
+              isSuccess: false,
+            },
       );
     } finally {
       setIsLoading(false);
@@ -108,6 +140,23 @@ export default function Login() {
                   <div className="invalid-feedback">{loginErrors.password}</div>
                 )}
               </div>
+              <div className="form-check mb-3 float-end">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="rememberMeCheckbox"
+                  checked={shouldRemember}
+                  onChange={(e) => {
+                    setShouldRemember(e.target.checked);
+                  }}
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor="rememberMeCheckbox"
+                >
+                  Remember Me
+                </label>
+              </div>
               <button
                 type="submit"
                 className="btn btn-primary w-100 mb-3 rounded-1 py-3"
@@ -130,12 +179,7 @@ export default function Login() {
               <strong>Register</strong>
             </Link>
           </p>
-          {/* General Error Message */}
-          <div
-            className={`alert alert-danger fade my-3 ${errorMsg ? "show" : "d-none"}`}
-          >
-            <p className="text-danger mb-0">{errorMsg}</p>
-          </div>
+          <MessageBox statusMessage={statusMessage} />
         </div>
       </div>
     </div>

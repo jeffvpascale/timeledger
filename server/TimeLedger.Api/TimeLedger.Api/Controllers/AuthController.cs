@@ -11,10 +11,45 @@ namespace TimeLedger.Api.Controllers
 	public class AuthController : ControllerBase
 	{
 		private readonly UserManager<ApplicationUser> _userManager;
+		private readonly SignInManager<ApplicationUser> _signInManager;
 
-		public AuthController(UserManager<ApplicationUser> userManager)
+		public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
 		{
 			_userManager = userManager;
+			_signInManager = signInManager;
+		}
+
+		[HttpPost("login")]
+		public async Task<ActionResult<ApplicationUserResponseDto>> Login(ApplicationUserLoginDto loginDto)
+		{
+			var user = await _userManager.FindByEmailAsync(loginDto.Email);
+			if (user == null)
+			{
+				return Unauthorized(new
+				{
+					message = "Invalid email address or password."
+				});
+			}
+
+			var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, loginDto.ShouldRemember, true);
+
+			if (!result.Succeeded)
+			{
+				return Unauthorized(new
+				{
+					message = "Invalid email address or password."
+				});
+			}
+
+			var responseDto = new ApplicationUserResponseDto
+			{
+				Id = user.Id,
+				FirstName = user.FirstName,
+				LastName = user.LastName,
+				Company = user.Company,
+				Email = user.Email ?? loginDto.Email,
+			};
+			return Ok(responseDto);
 		}
 
 		[Authorize]
@@ -49,6 +84,7 @@ namespace TimeLedger.Api.Controllers
 		{
 			ApplicationUser appUser = new ApplicationUser
 			{
+				UserName = registerDto.Email,
 				FirstName = registerDto.FirstName,
 				LastName = registerDto.LastName,
 				Company = registerDto.Company,
@@ -121,6 +157,14 @@ namespace TimeLedger.Api.Controllers
 				return BadRequest(result.Errors);
 			}
 
+			return NoContent();
+		}
+
+		[Authorize]
+		[HttpPost("logout")]
+		public async Task<IActionResult> Logout()
+		{
+			await _signInManager.SignOutAsync();
 			return NoContent();
 		}
 	}

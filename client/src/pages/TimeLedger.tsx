@@ -9,7 +9,7 @@ import {
   getProjectsByClientId,
   addProject,
   updateProject,
-} from "../services/projectService";
+} from "../services/ProjectService";
 import type { TimeEntry, BillingStatus } from "../types/TimeEntry";
 import {
   addTimeEntry,
@@ -17,12 +17,13 @@ import {
   getTimeEntriesByProjectId,
   updateTimeEntry,
   updateBillingStatus,
-} from "../services/timeEntryService";
+} from "../services/TimeEntryService";
 import {
   loadViewPreferences,
   saveViewPreferences,
   type ViewPreferences,
 } from "../services/viewPreferences";
+import Logout from "../components/LogoutButton";
 
 function TimeLedger() {
   // Development Testing Variables
@@ -373,18 +374,21 @@ function TimeLedger() {
   return (
     <>
       <div className="container mt-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div className="d-flex align-items-center gap-3">
-            <div className="bg-primary text-white rounded-3 px-4 py-3">
-              <i className="bi bi-clock fs-4"></i>
-            </div>
-            <div>
-              <h4 className="mb-0">TimeLedger</h4>
-              <p className="small text-body-secondary mb-0">
-                Time tracking &amp; billing
-              </p>
+        <div className="d-flex justify-content-between align-items-center">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center gap-3">
+              <div className="bg-primary text-white rounded-3 px-4 py-3">
+                <i className="bi bi-clock fs-4"></i>
+              </div>
+              <div>
+                <h4 className="mb-0">TimeLedger</h4>
+                <p className="small text-body-secondary mb-0">
+                  Time tracking &amp; billing
+                </p>
+              </div>
             </div>
           </div>
+          <Logout />
         </div>
         {/* Client Selector */}
         {clientLoadError ? (
