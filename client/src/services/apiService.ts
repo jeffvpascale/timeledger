@@ -1,11 +1,5 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const REQUEST_TIMEOUT_MS = 10_000;
-
-function requestSignal(signal?: AbortSignal): AbortSignal {
-    const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-    return signal ? AbortSignal.any([signal, timeout]) : timeout;
-}
 
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
@@ -23,17 +17,14 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const apiClient = {
-    async get<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
-        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-            signal: requestSignal(signal),
-        });
+    async get<T>(endpoint: string): Promise<T> {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`);
         return handleResponse<T>(response);
     },
 
     async post<T>(endpoint: string, data: unknown): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "POST",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -44,7 +35,6 @@ export const apiClient = {
     async put<T>(endpoint: string, data: unknown): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "PUT",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -55,7 +45,6 @@ export const apiClient = {
     async patch<T>(endpoint: string, data: unknown): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "PATCH",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -66,7 +55,6 @@ export const apiClient = {
     async delete(endpoint: string): Promise<void> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "DELETE",
-            signal: requestSignal(),
         });
 
         await handleResponse<void>(response);

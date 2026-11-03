@@ -71,48 +71,47 @@ function App() {
     }
   }
 
-  // Load Clients on Startup
+  // Load clients and restore the saved selection on startup.
   useEffect(() => {
-    const controller = new AbortController();
+    async function restoreSavedView(clients: Client[]) {
+      const client = clients.find(
+        (item) => item.id === savedPreferences.clientId &&
+          (savedPreferences.showArchivedClients || !item.isArchived),
+      );
+      if (!client) return;
+
+      const projects = await getProjectsByClientId(client.id);
+      setSelectedClientId(client.id);
+      setProjectList(projects);
+      setIsProjectSelectorHidden(false);
+
+      const project = projects.find(
+        (item) => item.id === savedPreferences.projectId &&
+          (savedPreferences.showArchivedProjects || !item.isArchived),
+      );
+      if (!project) return;
+
+      const entries = await getTimeEntriesByProjectId(project.id);
+      setSelectedProjectId(project.id);
+      setTimeEntryList(entries);
+      setAreTimeEntriesHidden(false);
+    }
+
     async function loadClients() {
       try {
-        const clients = await getClients(controller.signal);
-        if (controller.signal.aborted) return;
+        const clients = await getClients();
         setClientList(clients);
 
-        const client = clients.find((item) => item.id === savedPreferences.clientId &&
-          (savedPreferences.showArchivedClients || !item.isArchived));
-        if (!client) return;
-
-        const projects = await getProjectsByClientId(client.id);
-        if (controller.signal.aborted) return;
-        setSelectedClientId(client.id);
-        setProjectList(projects);
-        setIsProjectSelectorHidden(false);
-
-        const project = projects.find((item) => item.id === savedPreferences.projectId &&
-          (savedPreferences.showArchivedProjects || !item.isArchived));
-        if (!project) return;
-
-        const entries = await getTimeEntriesByProjectId(project.id);
-        if (controller.signal.aborted) return;
-        setSelectedProjectId(project.id);
-        setTimeEntryList(entries);
-        setAreTimeEntriesHidden(false);
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          setClientLoadError(
-            error instanceof Error && error.name === "TimeoutError"
-              ? "Loading clients took too long. Please try again."
-              : "Unable to load saved view or clients. Check that the API is running and try again.",
-          );
-        }
+        await restoreSavedView(clients);
+      } catch {
+        setClientLoadError(
+          "Unable to load saved view or clients. Check that the API is running and try again.",
+        );
       } finally {
-        if (!controller.signal.aborted) setIsLoadingClientList(false);
+        setIsLoadingClientList(false);
       }
     }
     void loadClients();
-    return () => controller.abort();
   }, [clientLoadAttempt, savedPreferences]);
 
   function retryClientLoad() {
