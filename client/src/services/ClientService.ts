@@ -5,9 +5,9 @@ import { useMocks } from "./serviceConfig";
 
 const endPoint = "/client"
 
-export async function getClients(signal?: AbortSignal): Promise<Client[]> {
+export async function getClients(): Promise<Client[]> {
     if (useMocks) return mockService.getClients();
-    const clients = await apiClient.get<Client[]>(`${endPoint}`, signal);
+    const clients = await apiClient.get<Client[]>(`${endPoint}`);
     return clients;
 }
 

@@ -1,6 +1,5 @@
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-const REQUEST_TIMEOUT_MS = 10_000;
 
 export class ApiError extends Error {
     status: number;
@@ -11,12 +10,6 @@ export class ApiError extends Error {
         this.status = status;
     }
 }
-
-function requestSignal(signal?: AbortSignal): AbortSignal {
-    const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
-    return signal ? AbortSignal.any([signal, timeout]) : timeout;
-}
-
 
 async function handleResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
@@ -37,10 +30,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export const apiClient = {
-    async get<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    async get<T>(endpoint: string): Promise<T> {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             credentials: "include",
-            signal: requestSignal(signal),
         });
         return handleResponse<T>(response);
     },
@@ -49,7 +41,6 @@ export const apiClient = {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "POST",
             credentials: "include",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -61,7 +52,6 @@ export const apiClient = {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "PUT",
             credentials: "include",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -73,7 +63,6 @@ export const apiClient = {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "PATCH",
             credentials: "include",
-            signal: requestSignal(),
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
@@ -85,7 +74,6 @@ export const apiClient = {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             method: "DELETE",
             credentials: "include",
-            signal: requestSignal(),
         });
 
         await handleResponse<void>(response);
