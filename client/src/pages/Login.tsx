@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
+import PasswordInput from "../components/PasswordInput";
 import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 // Field Validation Errors
@@ -103,6 +104,7 @@ export default function Login() {
                   maxLength={254}
                   className={`form-control ${loginErrors.email ? "is-invalid" : ""}`}
                   id="emailAddress"
+                  autoComplete="username"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => {
@@ -121,10 +123,10 @@ export default function Login() {
                 <label htmlFor="password" className="form-label">
                   Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  autoComplete="current-password"
                   maxLength={128}
-                  className={`form-control ${loginErrors.password ? "is-invalid" : ""}`}
+                  error={loginErrors.password}
                   id="password"
                   placeholder="Enter your password"
                   value={password}
@@ -136,9 +138,6 @@ export default function Login() {
                     setPassword(e.target.value);
                   }}
                 />
-                {loginErrors.password && (
-                  <div className="invalid-feedback">{loginErrors.password}</div>
-                )}
               </div>
               <div className="form-check mb-3 float-end">
                 <input

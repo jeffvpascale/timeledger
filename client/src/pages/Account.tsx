@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import { editPassword } from "../services/authService";
 import Logout from "../components/LogoutButton";
+import PasswordInput from "../components/PasswordInput";
 import MessageBox, { type StatusMessage } from "../components/MessageBox";
 
 interface AccountDetailsErrors {
@@ -175,6 +176,7 @@ export default function Account() {
                   maxLength={50}
                   className={`form-control ${accountDetailErrors.firstName ? "is-invalid" : ""}`}
                   id="firstName"
+                  autoComplete="given-name"
                   placeholder="First Name"
                   value={firstName}
                   onChange={(e) => {
@@ -200,6 +202,7 @@ export default function Account() {
                   maxLength={50}
                   className={`form-control ${accountDetailErrors.lastName ? "is-invalid" : ""}`}
                   id="lastName"
+                  autoComplete="family-name"
                   placeholder="Last Name"
                   value={lastName}
                   onChange={(e) => {
@@ -225,6 +228,7 @@ export default function Account() {
                   maxLength={100}
                   className={`form-control ${accountDetailErrors.company ? "is-invalid" : ""}`}
                   id="company"
+                  autoComplete="organization"
                   placeholder="Your Company"
                   value={company}
                   onChange={(e) => {
@@ -250,6 +254,7 @@ export default function Account() {
                   maxLength={254}
                   className="form-control"
                   id="emailAddress"
+                  autoComplete="username"
                   value={emailAddress}
                   disabled
                 />
@@ -286,10 +291,10 @@ export default function Account() {
                 <label htmlFor="currentPassword" className="form-label">
                   Current Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  autoComplete="current-password"
                   maxLength={128}
-                  className={`form-control ${passwordChangeErrors.currentPassword ? "is-invalid" : ""}`}
+                  error={passwordChangeErrors.currentPassword}
                   id="currentPassword"
                   placeholder="Enter your current password"
                   value={currentPassword}
@@ -301,20 +306,15 @@ export default function Account() {
                     setCurrentPassword(e.target.value);
                   }}
                 />
-                {passwordChangeErrors.currentPassword && (
-                  <div className="invalid-feedback">
-                    {passwordChangeErrors.currentPassword}
-                  </div>
-                )}
               </div>
               <div className="mb-3">
                 <label htmlFor="newPassword" className="form-label">
                   New Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  autoComplete="new-password"
                   maxLength={128}
-                  className={`form-control ${passwordChangeErrors.newPassword ? "is-invalid" : ""}`}
+                  error={passwordChangeErrors.newPassword}
                   id="newPassword"
                   placeholder="New password"
                   value={newPassword}
@@ -326,20 +326,15 @@ export default function Account() {
                     setNewPassword(e.target.value);
                   }}
                 />
-                {passwordChangeErrors.newPassword && (
-                  <div className="invalid-feedback">
-                    {passwordChangeErrors.newPassword}
-                  </div>
-                )}
               </div>
               <div className="mb-3">
                 <label htmlFor="confirmNewPassword" className="form-label">
                   Confirm New Password
                 </label>
-                <input
-                  type="password"
+                <PasswordInput
+                  autoComplete="new-password"
                   maxLength={128}
-                  className={`form-control ${passwordChangeErrors.confirmNewPassword ? "is-invalid" : ""}`}
+                  error={passwordChangeErrors.confirmNewPassword}
                   id="confirmNewPassword"
                   placeholder="Confirm your new password"
                   value={confirmNewPassword}
@@ -351,11 +346,6 @@ export default function Account() {
                     setConfirmNewPassword(e.target.value);
                   }}
                 />
-                {passwordChangeErrors.confirmNewPassword && (
-                  <div className="invalid-feedback">
-                    {passwordChangeErrors.confirmNewPassword}
-                  </div>
-                )}
               </div>
               <button
                 type="submit"

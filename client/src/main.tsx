@@ -15,12 +15,13 @@ import Account from "./pages/Account.tsx";
 import TimeLedger from "./pages/TimeLedger.tsx";
 import ThemeToggle from "./components/ThemeToggle.tsx";
 import { AuthProvider } from "./context/AuthContext.tsx";
+import HomeRoute from "./components/HomeRoute";
 
 // Define your routes in an array
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Login />,
+    element: <HomeRoute />,
   },
   {
     path: "/login",

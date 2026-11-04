@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
 import MessageBox, { type StatusMessage } from "../components/MessageBox";
+import PasswordInput from "../components/PasswordInput";
 
 interface RegisterErrors {
   firstName?: string;
@@ -20,8 +21,6 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
     null,
@@ -120,6 +119,7 @@ export default function Register() {
                     maxLength={50}
                     className={`form-control ${registerErrors.firstName ? "is-invalid" : ""}`}
                     id="firstName"
+                    autoComplete="given-name"
                     placeholder="John"
                     value={firstName}
                     onChange={(e) => {
@@ -145,6 +145,7 @@ export default function Register() {
                     maxLength={50}
                     className={`form-control ${registerErrors.lastName ? "is-invalid" : ""}`}
                     id="lastName"
+                    autoComplete="family-name"
                     placeholder="Doe"
                     value={lastName}
                     onChange={(e) => {
@@ -171,6 +172,7 @@ export default function Register() {
                   maxLength={100}
                   className={`form-control ${registerErrors.company ? "is-invalid" : ""}`}
                   id="company"
+                  autoComplete="organization"
                   placeholder="Your Company"
                   value={company}
                   onChange={(e) => {
@@ -197,6 +199,7 @@ export default function Register() {
                   required
                   className={`form-control ${registerErrors.email ? "is-invalid" : ""}`}
                   id="emailAddress"
+                  autoComplete="username"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => {
@@ -216,80 +219,42 @@ export default function Register() {
                 <label htmlFor="password" className="form-label">
                   Password
                 </label>
-                <div className="input-group has-validation">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    maxLength={128}
-                    className={`form-control rounded-end-0 ${registerErrors.password ? "is-invalid" : ""}`}
-                    id="password"
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={(e) => {
-                      setRegisterErrors({
-                        ...registerErrors,
-                        password: undefined,
-                      });
-                      setPassword(e.target.value);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={
-                      showPassword ? "Hide passwords" : "Show passwords"
-                    }
-                  >
-                    <i
-                      className={`bi bi-eye${showPassword ? "-slash" : ""}`}
-                    ></i>
-                  </button>
-                  {registerErrors.password && (
-                    <div className="invalid-feedback">
-                      {registerErrors.password}
-                    </div>
-                  )}
-                </div>
+                <PasswordInput
+                  id="password"
+                  maxLength={128}
+                  autoComplete="new-password"
+                  placeholder="Create a password"
+                  value={password}
+                  error={registerErrors.password}
+                  onChange={(e) => {
+                    setRegisterErrors((errors) => ({
+                      ...errors,
+                      password: undefined,
+                    }));
+                    setPassword(e.target.value);
+                  }}
+                />
               </div>
 
               <div className="mb-3">
                 <label htmlFor="confirmPassword" className="form-label">
                   Confirm password
                 </label>
-                <div className="input-group has-validation">
-                  <input
-                    type={showConfirmPassword ? "text" : "password"}
-                    maxLength={128}
-                    className={`form-control rounded-end-0  ${registerErrors.confirmPassword ? "is-invalid" : ""}`}
-                    id="confirmPassword"
-                    placeholder="Confirm your password"
-                    value={confirmPassword}
-                    onChange={(e) => {
-                      setRegisterErrors({
-                        ...registerErrors,
-                        confirmPassword: undefined,
-                      });
-                      setConfirmPassword(e.target.value);
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={
-                      showConfirmPassword ? "Hide passwords" : "Show passwords"
-                    }
-                  >
-                    <i
-                      className={`bi bi-eye${showConfirmPassword ? "-slash" : ""}`}
-                    ></i>
-                  </button>
-                  {registerErrors.confirmPassword && (
-                    <div className="invalid-feedback">
-                      {registerErrors.confirmPassword}
-                    </div>
-                  )}
-                </div>
+                <PasswordInput
+                  id="confirmPassword"
+                  maxLength={128}
+                  autoComplete="new-password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  error={registerErrors.confirmPassword}
+                  onChange={(e) => {
+                    setRegisterErrors((errors) => ({
+                      ...errors,
+                      confirmPassword: undefined,
+                    }));
+                    setConfirmPassword(e.target.value);
+                  }}
+                />
               </div>
 
               <button
