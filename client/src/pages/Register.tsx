@@ -99,11 +99,11 @@ export default function Register() {
   return (
     <div className="container p-3">
       <div
-        className="mx-auto w-100 p-4 border border-1 bg-secondary-subtle rounded-2"
+        className="mx-auto w-100 p-4 border border-1 rounded-2"
         style={{ maxWidth: "500px" }}
       >
         <div className="d-flex flex-column gap-2 align-items-center">
-          <div className="bg-secondary px-3 py-2 rounded-2">
+          <div className="bg-primary px-3 py-2 rounded-2 text-white">
             <i className="bi bi-person-add fs-2"></i>
           </div>
           <p className="fs-4 m-0">Create an account</p>

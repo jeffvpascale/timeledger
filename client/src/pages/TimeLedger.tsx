@@ -23,7 +23,8 @@ import {
   saveViewPreferences,
   type ViewPreferences,
 } from "../services/viewPreferences";
-import Logout from "../components/LogoutButton";
+import LogoutButton from "../components/LogoutButton";
+import { Link } from "react-router-dom";
 
 function TimeLedger() {
   // Development Testing Variables
@@ -383,7 +384,13 @@ function TimeLedger() {
               </div>
             </div>
           </div>
-          <Logout />
+          <div className="d-flex gap-3">
+            <Link to="/account" className="btn btn-primary">
+              <i className="bi bi-person me-2"></i>
+              Account
+            </Link>
+            <LogoutButton />
+          </div>
         </div>
         {/* Client Selector */}
         {clientLoadError ? (

@@ -30,9 +30,10 @@ export default function Account() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const emailAddress = user?.email ?? "";
 
-  const [statusMessage, setStatusMessage] = useState<StatusMessage | null>(
-    null,
-  );
+  const [accountDetailsStatusMessage, setAccountDetailsStatusMessage] =
+    useState<StatusMessage | null>(null);
+  const [passwordStatusMessage, setPasswordStatusMessage] =
+    useState<StatusMessage | null>(null);
   const [accountDetailErrors, setAccountDetailErrors] =
     useState<AccountDetailsErrors>({});
   const [passwordChangeErrors, setPasswordChangeErrors] =
@@ -43,7 +44,7 @@ export default function Account() {
   ): Promise<void> {
     try {
       event.preventDefault();
-      setStatusMessage(null);
+      setAccountDetailsStatusMessage(null);
 
       const formErrors: AccountDetailsErrors = {};
 
@@ -61,8 +62,12 @@ export default function Account() {
 
       setIsLoadingAccountDetails(true);
       await updateUser(firstName, lastName, company, emailAddress);
+      setAccountDetailsStatusMessage({
+        message: "Account updated.",
+        isSuccess: true,
+      });
     } catch (error) {
-      setStatusMessage(
+      setAccountDetailsStatusMessage(
         error instanceof Error
           ? {
               message: error.message,
@@ -83,7 +88,7 @@ export default function Account() {
   ): Promise<void> {
     try {
       event.preventDefault();
-      setStatusMessage(null);
+      setPasswordStatusMessage(null);
 
       const formErrors: PasswordChangeErrors = {};
       if (!currentPassword) {
@@ -109,8 +114,15 @@ export default function Account() {
       }
       setIsLoadingChangePassword(true);
       await editPassword(currentPassword, newPassword);
+      setPasswordStatusMessage({
+        message: "Password updated.",
+        isSuccess: true,
+      });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
     } catch (error) {
-      setStatusMessage(
+      setPasswordStatusMessage(
         error instanceof Error
           ? {
               message: error.message,
@@ -134,11 +146,11 @@ export default function Account() {
             to="/time-ledger"
             className="btn btn-primary text-decoration-none"
           >
-            <strong>Back</strong>
+            <i className="bi bi-chevron-left me-2"></i>
+            Back
           </Link>
           <Logout />
         </div>
-        <MessageBox statusMessage={statusMessage} />
         {renderChangeAccountDetails()}
         {renderChangePassword()}
       </div>
@@ -146,9 +158,9 @@ export default function Account() {
   );
   function renderChangeAccountDetails() {
     return (
-      <div className="mx-auto w-100 p-4 border border-1 bg-secondary-subtle rounded-2 mb-4">
+      <div className="mx-auto w-100 p-4 border border-1 rounded-2 mb-4">
         <div className="d-flex flex-column gap-2 align-items-center">
-          <div className="bg-secondary px-3 py-2 rounded-2">
+          <div className="bg-primary px-3 py-2 text-white rounded-2">
             <i className="bi bi-person fs-2"></i>
           </div>
           <p className="fs-4 m-0">Edit your account</p>
@@ -256,6 +268,7 @@ export default function Account() {
                 )}
                 Save
               </button>
+              <MessageBox statusMessage={accountDetailsStatusMessage} />
             </form>
           </div>
         </div>
@@ -264,7 +277,7 @@ export default function Account() {
   }
   function renderChangePassword() {
     return (
-      <div className="mx-auto w-100 p-4 border border-1 bg-secondary-subtle rounded-2">
+      <div className="mx-auto w-100 p-4 border border-1 rounded-2">
         <div className="d-flex flex-column gap-2 align-items-center">
           <p className="fs-4 m-0">Update your password</p>
           <div className="w-100 px-3">
@@ -358,6 +371,7 @@ export default function Account() {
                 )}
                 Save
               </button>
+              <MessageBox statusMessage={passwordStatusMessage} />
             </form>
           </div>
         </div>
