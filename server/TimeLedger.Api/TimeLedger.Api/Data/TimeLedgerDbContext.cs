@@ -26,6 +26,14 @@ namespace TimeLedger.Api.Data
 			modelBuilder.Entity<Client>()
 				.HasIndex(c => new { c.UserId, c.Name })
 				.IsUnique();
+
+			modelBuilder.Entity<Project>()
+				.Property(p => p.Rate)
+				.HasPrecision(18, 2);
+
+			modelBuilder.Entity<TimeEntry>()
+				.Property(t => t.TimeSpent)
+				.HasPrecision(18, 2);
 		}
 
 		public DbSet<Client> Clients { get; set; }

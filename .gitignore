@@ -52,3 +52,9 @@ obj/
 
 # Database backups
 docker/backups/
+
+# Generated frontend files copied into the API
+server/TimeLedger.Api/TimeLedger.Api/wwwroot/
+
+# Local Visual Studio publish profiles
+server/TimeLedger.Api/TimeLedger.Api/Properties/PublishProfiles/

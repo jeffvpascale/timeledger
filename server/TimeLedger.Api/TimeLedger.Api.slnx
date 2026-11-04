@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="TimeLedger.Api/TimeLedger.Api.csproj" />
+  <Project Path="TimeLedger.Migrations.SqlServer/TimeLedger.Migrations.SqlServer.csproj" Id="c9f7d2e0-fd31-4739-86bf-7d2854311777" />
 </Solution>

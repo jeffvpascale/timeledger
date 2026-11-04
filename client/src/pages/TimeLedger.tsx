@@ -4,7 +4,7 @@ import ProjectSelector from "../components/ProjectSelector";
 import TimeEntryComponent from "../components/TimeEntryComponent";
 import type { Client } from "../types/Client";
 import type { Project } from "../types/Project";
-import { getClients, updateClient, addClient } from "../services/clientService";
+import { getClients, updateClient, addClient } from "../services/ClientService";
 import {
   getProjectsByClientId,
   addProject,

@@ -239,15 +239,7 @@ export default function Register() {
                     aria-label={
                       showPassword ? "Hide passwords" : "Show passwords"
                     }
-                    disabled={isLoading}
                   >
-                    {isLoading && (
-                      <span
-                        className="spinner-border spinner-border-sm me-2"
-                        role="status"
-                        aria-hidden="true"
-                      />
-                    )}
                     <i
                       className={`bi bi-eye${showPassword ? "-slash" : ""}`}
                     ></i>
@@ -303,7 +295,15 @@ export default function Register() {
               <button
                 type="submit"
                 className="btn btn-primary w-100 mb-3 rounded-1 py-3"
+                disabled={isLoading}
               >
+                {isLoading && (
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                )}
                 Create account
               </button>
             </form>

@@ -20,9 +20,23 @@ builder.Services.AddControllers()
 builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<TimeLedgerDbContext>(options =>
-	options.UseSqlite(
-		builder.Configuration.GetConnectionString("DefaultConnection")
-	));
+{
+	var provider = builder.Configuration["DatabaseProvider"] ?? "Sqlite";
+
+	var connectionString = builder.Configuration.GetConnectionString(
+		provider == "SqlServer" ? "SqlServer" : "DefaultConnection");
+
+	if (provider == "SqlServer")
+	{
+		options.UseSqlServer(
+			connectionString,
+			sql => sql.MigrationsAssembly("TimeLedger.Migrations.SqlServer"));
+	}
+	else
+	{
+		options.UseSqlite(connectionString);
+	}
+});
 
 builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
 	.AddEntityFrameworkStores<TimeLedgerDbContext>();
@@ -66,10 +80,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// A single local installation creates or upgrades its own SQLite database.
-using (var scope = app.Services.CreateScope())
+// Automatically apply migrations only for local SQLite.
+if (app.Configuration["DatabaseProvider"] != "SqlServer")
 {
-	var db = scope.ServiceProvider.GetRequiredService<TimeLedgerDbContext>();
+	using var scope = app.Services.CreateScope();
+	var db = scope.ServiceProvider
+		.GetRequiredService<TimeLedgerDbContext>();
+
 	await db.Database.MigrateAsync();
 }
 
@@ -89,5 +106,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();

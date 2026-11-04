@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,17 +6,20 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Local data must never be bundled in a release. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.db;**/*.db-*;**/*.sqlite;**/*.sqlite-*;**/*.sqlite3;**/*.sqlite3-*</DefaultItemExcludes>
+    <UserSecretsId>46a29bee-24b1-4836-bea2-7fc286e7c314</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.14" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Scalar.AspNetCore" Version="2.18.3" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.22" />
   </ItemGroup>
 
   <ItemGroup>
