@@ -224,7 +224,7 @@ A first request after inactivity can take longer while the hosting app starts or
 
 ### CI/CD
 
-The workflow in `.github/workflows/feature-authentication_timeledger-jeff.yml` deploys pushes to `feature/authentication`. Pushes that change only Markdown files or files under `docs/` are skipped. Manual runs are available through GitHub Actions.
+The workflow in `.github/workflows/deploy-azure.yml` deploys pushes to `azure`. Pushes that change only Markdown files or files under `docs/` are skipped. Manual runs are available through GitHub Actions.
 
 The workflow:
 
