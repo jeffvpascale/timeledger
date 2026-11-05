@@ -58,3 +58,6 @@ docker/backups/
 
 # Local Visual Studio publish profiles
 /server/TimeLedger.Api/TimeLedger.Api/Properties/PublishProfiles/
+
+# Vitest reports and artifacts
+.vitest/
