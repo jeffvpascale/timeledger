@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="TimeLedger.Api.Tests/TimeLedger.Api.Tests.csproj" Id="ab327fa6-d27a-4e1a-905d-ecdb9de8374b" />
   <Project Path="TimeLedger.Api/TimeLedger.Api.csproj" />
 </Solution>

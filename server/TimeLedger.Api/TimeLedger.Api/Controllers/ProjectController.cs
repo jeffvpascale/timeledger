@@ -64,14 +64,32 @@ namespace TimeLedger.Api.Controllers
 		[HttpPost]
 		public async Task<ActionResult<ProjectResponseDto>> CreateProjectAsync([FromBody] ProjectCreateDto projectDto)
 		{
+			var trimmedProjectName = projectDto.Name.Trim();
+			var trimmedProjectDescription = projectDto.Description?.Trim();
 			Project newProject = new Project
 			{
-				Name = projectDto.Name,
-				Description = projectDto.Description,
+				Name = trimmedProjectName,
+				Description = trimmedProjectDescription,
 				Rate = projectDto.Rate,
 				IsArchived = false,
 				ClientId = projectDto.ClientId,
 			};
+
+			var clientExists = await _db.Clients.AnyAsync(c => c.Id == projectDto.ClientId);
+
+			if (!clientExists) { return NotFound(); }
+
+			var duplicateExists = await _db.Projects.AnyAsync(p =>
+				p.Name.Trim() == trimmedProjectName &&
+				p.ClientId == projectDto.ClientId);
+
+			if (duplicateExists)
+			{
+				return BadRequest(new
+				{
+					message = "Please enter a unique project name."
+				});
+			}
 
 			_db.Add(newProject);
 			await _db.SaveChangesAsync();
@@ -95,14 +113,31 @@ namespace TimeLedger.Api.Controllers
 		[HttpPut("{id:int}")]
 		public async Task<ActionResult<ProjectResponseDto>> UpdateProjectAsync(int id, [FromBody] ProjectUpdateDto projectDto)
 		{
+			var trimmedProjectName = projectDto.Name.Trim();
+			var trimmedProjectDescription = projectDto.Description?.Trim();
+
 			var updateProject = await _db.Projects.FirstOrDefaultAsync(p => p.Id == id);
 			if (updateProject == null)
 			{
 				return NotFound();
 			}
 
-			updateProject.Name = projectDto.Name;
-			updateProject.Description = projectDto.Description;
+			var duplicateExists = await _db.Projects.AnyAsync(p =>
+				p.Name.Trim() == trimmedProjectName &&
+				p.ClientId == updateProject.ClientId &&
+				p.Id != id
+				);
+
+			if (duplicateExists)
+			{
+				return BadRequest(new
+				{
+					message = "Please enter a unique project name."
+				});
+			}
+
+			updateProject.Name = trimmedProjectName;
+			updateProject.Description = trimmedProjectDescription;
 			updateProject.Rate = projectDto.Rate;
 			updateProject.IsArchived = projectDto.IsArchived;
 

@@ -68,6 +68,15 @@ namespace TimeLedger.Api.Controllers
 			{
 				return BadRequest("A date is required.");
 			}
+
+			var projectExists = await _db.Projects.AnyAsync(
+				project => project.Id == timeEntryDto.ProjectId);
+
+			if (!projectExists)
+			{
+				return NotFound();
+			}
+
 			TimeEntry newTimeEntry = new TimeEntry
 			{
 
